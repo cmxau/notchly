@@ -1,7 +1,7 @@
 name: "Alpha Release"
 
 # Builds an ad-hoc signed alpha DMG and publishes it as a GitHub pre-release.
-# Needs no signing secrets, so it works on forks. The hardened runtime is off: it would refuse the bundled
+# Needs no signing secrets, so it works on forks (run it from the Actions tab: Alpha Release > Run workflow). The hardened runtime is off: it would refuse the bundled
 # MediaRemoteAdapter.framework, which keeps the upstream team's signature, and it's only needed for notarization.
 # Ad-hoc signed apps aren't notarized: on first launch,
 # right-click the app and choose Open (or run `xattr -dr com.apple.quarantine "/Applications/Notchly.app"`).
