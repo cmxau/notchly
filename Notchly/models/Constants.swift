@@ -1,0 +1,211 @@
+//
+//  Constants.swift
+//  Notchly
+//
+//  Created by Richard Kunkli on 2024. 10. 17..
+//
+
+import SwiftUI
+import Defaults
+
+private let availableDirectories = FileManager
+    .default
+    .urls(for: .documentDirectory, in: .userDomainMask)
+let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+let bundleIdentifier = Bundle.main.bundleIdentifier!
+let appVersion = "\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "") (\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? ""))"
+
+let temporaryDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
+let spacing: CGFloat = 16
+
+enum CalendarSelectionState: Codable, Defaults.Serializable {
+    case all
+    case selected(Set<String>)
+}
+
+enum HideNotchOption: String, Defaults.Serializable {
+    case always
+    case nowPlayingOnly
+    case never
+}
+
+// Define notification names at file scope
+extension Notification.Name {
+    static let mediaControllerChanged = Notification.Name("mediaControllerChanged")
+}
+
+// Media controller types for selection in settings
+enum MediaControllerType: String, CaseIterable, Identifiable, Defaults.Serializable {
+    // Alphabetical, as listed in Settings
+    case amazonMusic = "Amazon Music"
+    case appleMusic = "Apple Music"
+    case nowPlaying = "Now Playing"
+    case soundCloud = "SoundCloud"
+    case spotify = "Spotify"
+    case youtubeMusic = "YouTube Music"
+
+    /// Sources that read macOS Now Playing, which isn't available on every macOS version.
+    var usesNowPlaying: Bool {
+        self == .nowPlaying || self == .amazonMusic || self == .soundCloud
+    }
+
+    /// Apps followed by the Amazon Music and SoundCloud sources.
+    var appBundleIdentifiers: Set<String> {
+        switch self {
+        case .amazonMusic: return ["com.amazon.music"]
+        case .soundCloud: return ["com.soundcloud.desktop", "com.salomvary.soundcleod"]
+        default: return []
+        }
+    }
+    
+    var id: String { self.rawValue }
+}
+
+// Action to perform when Option (⌥) is held while pressing media keys
+enum OptionKeyAction: String, CaseIterable, Identifiable, Defaults.Serializable {
+    case openSettings = "Open System Settings"
+    case showHUD = "Show HUD"
+    case none = "No Action"
+
+    var id: String { self.rawValue }
+}
+
+extension Defaults.Keys {
+    // MARK: General
+    static let showOnAllDisplays = Key<Bool>("showOnAllDisplays", default: false)
+    static let automaticallySwitchDisplay = Key<Bool>("automaticallySwitchDisplay", default: true)
+    static let showHelloAnimationOnLaunch = Key<Bool>("showHelloAnimationOnLaunch", default: true)
+    
+    // MARK: Behavior
+    static let minimumHoverDuration = Key<TimeInterval>("minimumHoverDuration", default: 0.3)
+    static let enableHaptics = Key<Bool>("enableHaptics", default: true)
+    static let openNotchOnHover = Key<Bool>("openNotchOnHover", default: true)
+    static let extendHoverArea = Key<Bool>("extendHoverArea", default: false)
+    static let notchHeightMode = Key<WindowHeightMode>(
+        "notchHeightMode",
+        default: WindowHeightMode.matchRealNotchSize
+    )
+    static let nonNotchHeightMode = Key<WindowHeightMode>(
+        "nonNotchHeightMode",
+        default: WindowHeightMode.matchMenuBar
+    )
+    static let nonNotchHeight = Key<CGFloat>("nonNotchHeight", default: 32)
+    static let notchHeight = Key<CGFloat>("notchHeight", default: 32)
+    static let showOnLockScreen = Key<Bool>("showOnLockScreen", default: false)
+    static let showLockScreenAnimation = Key<Bool>("showLockScreenAnimation", default: true)
+    static let playLockScreenSounds = Key<Bool>("playLockScreenSounds", default: true)
+    static let showAccessoryConnectedIndicator = Key<Bool>("showAccessoryConnectedIndicator", default: true)
+    // MARK: AI agents
+    static let agentIntegrationEnabled = Key<Bool>("agentIntegrationEnabled", default: true)
+    /// Shared secret the hook bridge script sends, so only it can post agent events
+    static let agentBridgeToken = Key<String>("agentBridgeToken", default: "")
+    /// Agents the user disconnected, which aren't reconnected automatically
+    static let agentIntegrationsDisconnected = Key<[String]>("agentIntegrationsDisconnected", default: [])
+    /// Seconds before an unanswered request is handed back to the terminal; 0 waits indefinitely
+    static let agentDecisionTimeout = Key<Double>("agentDecisionTimeout", default: 300)
+    static let agentOpenNotchOnRequest = Key<Bool>("agentOpenNotchOnRequest", default: true)
+    static let agentShowInClosedNotch = Key<Bool>("agentShowInClosedNotch", default: true)
+    static let agentSoundsEnabled = Key<Bool>("agentSoundsEnabled", default: true)
+
+    /// AirPods Max colour bytes seen in their BLE advertisements, by Bluetooth address
+    static let airPodsMaxColorCodes = Key<[String: Int]>("airPodsMaxColorCodes", default: [:])
+    static let hideFromScreenRecording = Key<Bool>("hideFromScreenRecording", default: false)
+    
+    // MARK: Appearance
+    static let showEmojis = Key<Bool>("showEmojis", default: false)
+    static let showMirror = Key<Bool>("showMirror", default: false)
+    static let lightingEffect = Key<Bool>("lightingEffect", default: true)
+    static let enableShadow = Key<Bool>("enableShadow", default: true)
+    static let nonNotchWidth = Key<CGFloat>("nonNotchWidth", default: 185)
+    static let islandTopGap = Key<CGFloat>("islandTopGap", default: 6)
+    static let appIconChoice = Key<Int>("appIconChoice", default: 1)
+    static let notchShapeStyle = Key<NotchShapeStyle>("notchShapeStyle", default: .notch)
+    static let cornerRadiusScaling = Key<Bool>("cornerRadiusScaling", default: true)
+
+    /// A cat in the closed notch while nothing else is showing
+    static let showNotchPet = Key<Bool>("showNotchPet", default: false)
+    /// Lyrics on the Music tab take the album art's colour instead of white and grey
+    static let lyricsUseAlbumColor = Key<Bool>("lyricsUseAlbumColor", default: true)
+    /// The order of the tabs after Home, which always comes first
+    static let tabOrder = Key<[NotchViews]>("tabOrder", default: [.music, .calendar, .agents, .shelf])
+    /// Turns every Notchly keyboard shortcut off without clearing them
+    static let keyboardShortcutsEnabled = Key<Bool>("keyboardShortcutsEnabled", default: true)
+    /// Tabs the user hid from the open notch
+    static let hiddenTabs = Key<[NotchViews]>("hiddenTabs", default: [])
+    static let homeLeftPane = Key<HomePane>("homeLeftPane", default: .music)
+    static let homeRightPane = Key<HomePane>("homeRightPane", default: .calendar)
+    /// What the open notch is drawn on
+    static let notchBackgroundStyle = Key<NotchBackgroundStyle>("notchBackgroundStyle", default: .black)
+    static let showCalendar = Key<Bool>("showCalendar", default: false)
+    /// Show upcoming events in the closed notch before they start, and when they start
+    static let calendarEventNotifications = Key<Bool>("calendarEventNotifications", default: true)
+    static let calendarEventLeadMinutes = Key<Int>("calendarEventLeadMinutes", default: 5)
+    static let hideCompletedReminders = Key<Bool>("hideCompletedReminders", default: true)
+    static let playerColorTinting = Key<Bool>("playerColorTinting", default: true)
+    
+    // MARK: Gestures
+    
+    // MARK: Media playback
+    static let coloredSpectrogram = Key<Bool>("coloredSpectrogram", default: true)
+    static let enableSneakPeek = Key<Bool>("enableSneakPeek", default: false)
+    static let waitInterval = Key<Double>("waitInterval", default: 3)
+    static let musicControlSlots = Key<[MusicControlButton]>(
+        "musicControlSlots",
+        default: MusicControlButton.defaultLayout
+    )
+    static let musicControlSlotLimit = Key<Int>(
+        "musicControlSlotLimit",
+        default: MusicControlButton.defaultLayout.count
+    )
+    
+    // MARK: Battery
+    static let showCallIndicator = Key<Bool>("showCallIndicator", default: true)
+    static let showPowerStatusNotifications = Key<Bool>("showPowerStatusNotifications", default: true)
+    
+    // MARK: HUD
+    static let hudReplacement = Key<Bool>("hudReplacement", default: false)
+    static let enableGradient = Key<Bool>("enableGradient", default: false)
+    static let systemEventIndicatorUseAccent = Key<Bool>("systemEventIndicatorUseAccent", default: false)
+    static let showOpenNotchHUDPercentage = Key<Bool>("showOpenNotchHUDPercentage", default: true)
+    static let showClosedNotchHUDPercentage = Key<Bool>("showClosedNotchHUDPercentage", default: false)
+    // Option key modifier behaviour for media keys
+    static let optionKeyAction = Key<OptionKeyAction>("optionKeyAction", default: OptionKeyAction.openSettings)
+    
+    // MARK: Shelf
+    static let notchlyShelf = Key<Bool>("notchlyShelf", default: true)
+    static let openShelfByDefault = Key<Bool>("openShelfByDefault", default: true)
+    static let shelfTapToOpen = Key<Bool>("shelfTapToOpen", default: true)
+    static let quickShareProvider = Key<String>("quickShareProvider", default: QuickShareProvider.defaultProvider.id)
+    static let copyOnDrag = Key<Bool>("copyOnDrag", default: false)
+    static let autoRemoveShelfItems = Key<Bool>("autoRemoveShelfItems", default: false)
+    static let expandedDragDetection = Key<Bool>("expandedDragDetection", default: true)
+    
+    // MARK: Calendar
+    static let calendarSelectionState = Key<CalendarSelectionState>("calendarSelectionState", default: .all)
+    static let hideAllDayEvents = Key<Bool>("hideAllDayEvents", default: false)
+    static let showFullEventTitles = Key<Bool>("showFullEventTitles", default: false)
+    static let autoScrollToNextEvent = Key<Bool>("autoScrollToNextEvent", default: true)
+    
+    // MARK: Fullscreen Media Detection
+    static let hideNotchOption = Key<HideNotchOption>("hideNotchOption", default: .nowPlayingOnly)
+    
+    // MARK: Media Controller
+    static let mediaController = Key<MediaControllerType>("mediaController", default: defaultMediaController)
+    
+    // MARK: Advanced Settings
+    static let useCustomAccentColor = Key<Bool>("useCustomAccentColor", default: false)
+    static let customAccentColorData = Key<Data?>("customAccentColorData", default: nil)
+    // Show or hide the title bar
+    static let hideTitleBar = Key<Bool>("hideTitleBar", default: true)
+    
+    // Helper to determine the default media controller based on NowPlaying deprecation status
+    static var defaultMediaController: MediaControllerType {
+        if MusicManager.shared.isNowPlayingDeprecated {
+            return .appleMusic
+        } else {
+            return .nowPlaying
+        }
+    }
+
+    static let didClearLegacyURLCacheV1 = Key<Bool>("didClearLegacyURLCache_v1", default: false)
+}

@@ -37,8 +37,8 @@ jobs:
     permissions:
       contents: read
     env:
-      PROJECT_NAME: boringNotch
-      APP_NAME: Boring Notch
+      PROJECT_NAME: Notchly
+      APP_NAME: Notchly
       EXPORT_METHOD: development
       VERSION_INPUT: ${{ inputs.version }}
       BUILD_NUMBER_INPUT: ${{ inputs.build_number }}
@@ -131,6 +131,11 @@ jobs:
             -archivePath "$PROJECT_NAME.xcarchive" \
             -exportPath Release \
             -exportOptionsPlist "$RUNNER_TEMP/export_options.plist"
+
+      # Does nothing for a build signed with a real certificate. For an ad-hoc build it gives the app a requirement
+      # that every build satisfies, so privacy grants (Accessibility, which the HUD needs) outlive updates.
+      - name: Keep privacy grants across updates
+        run: .github/scripts/sign_stable.sh "Release/$APP_NAME.app"
 
       - name: Create DMG
         run: |

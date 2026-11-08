@@ -53,3 +53,7 @@ build/
 *.xcarchive
 *.dSYM
 
+
+# Python
+__pycache__/
+*.pyc

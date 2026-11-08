@@ -4,7 +4,7 @@ name: "Alpha Release"
 # Needs no signing secrets, so it works on forks. The hardened runtime is off: it would refuse the bundled
 # MediaRemoteAdapter.framework, which keeps the upstream team's signature, and it's only needed for notarization.
 # Ad-hoc signed apps aren't notarized: on first launch,
-# right-click the app and choose Open (or run `xattr -dr com.apple.quarantine "/Applications/Boring Notch.app"`).
+# right-click the app and choose Open (or run `xattr -dr com.apple.quarantine "/Applications/Notchly.app"`).
 
 on:
   workflow_dispatch:
@@ -32,8 +32,8 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  PROJECT_NAME: boringNotch
-  APP_NAME: Boring Notch
+  PROJECT_NAME: Notchly
+  APP_NAME: Notchly
 
 jobs:
   build:
@@ -108,6 +108,11 @@ jobs:
           path: build.log
           if-no-files-found: ignore
 
+      # An ad-hoc signature changes with every build, and macOS drops privacy grants (Accessibility, which the HUD
+      # needs) when it does. This gives the app a requirement that every build satisfies, so a grant outlives updates.
+      - name: Keep privacy grants across updates
+        run: .github/scripts/sign_stable.sh "Release/$APP_NAME.app"
+
       - name: Verify signature
         run: codesign --verify --deep --strict --verbose=2 "Release/$APP_NAME.app"
 
@@ -161,18 +166,18 @@ jobs:
             draft_flag="--draft"
           fi
           cat > "$RUNNER_TEMP/notes.md" <<NOTES
-          Alpha build of Boring Notch ${VERSION}, from ${GITHUB_SHA}.
+          Alpha build of Notchly ${VERSION}, from ${GITHUB_SHA}.
 
-          This build is ad-hoc signed and not notarized. To open it the first time, right-click Boring Notch in Applications and choose Open, or run:
+          This build is ad-hoc signed and not notarized. To open it the first time, right-click Notchly in Applications and choose Open, or run:
 
-              xattr -dr com.apple.quarantine "/Applications/Boring Notch.app"
+              xattr -dr com.apple.quarantine "/Applications/Notchly.app"
 
           Automatic update checks are turned off in this build.
           NOTES
           gh release create "v${VERSION}" "Release/${PROJECT_NAME}-${VERSION}.dmg" \
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
-            --title "Boring Notch ${VERSION}" \
+            --title "Notchly ${VERSION}" \
             --notes-file "$RUNNER_TEMP/notes.md" \
             --prerelease \
             $draft_flag

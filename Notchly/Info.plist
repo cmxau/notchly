@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>SUEnableDownloaderService</key>
+	<true/>
+	<key>SUEnableInstallerLauncherService</key>
+	<true/>
+	<key>SUFeedURL</key>
+	<string>https://cmxau.github.io/notchly/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>B1Y47t8C/v8ImurYA+9arEsuCrpxwJSviekiflMElbI=</string>
+	<key>UTImportedTypeDeclarations</key>
+	<array>
+		<dict/>
+	</array>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>The teleprompter listens to your voice to follow your script. Audio is not recorded.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>The teleprompter uses speech recognition to highlight the words you say.</string>
+	<key>NSAudioCaptureUsageDescription</key>
+	<string>Notchly listens to what's playing to animate the equaliser in the notch. Nothing is recorded.</string>
+</dict>
+</plist>

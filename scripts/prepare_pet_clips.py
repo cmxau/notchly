@@ -1,9 +1,9 @@
-"""Prepares the closed-notch pet clips in boringNotch/pets from the original cat GIFs.
+"""Prepares the closed-notch pet clips in Notchly/pets from the original cat GIFs.
 
 Crops every clip to one shared canvas (so the cat stays the same size between clips, standing on the same
 floor), shrinks it for the notch and saves it as a GIF.
 
-usage: python3 scripts/prepare_pet_clips.py <folder with the original GIFs> boringNotch/pets
+usage: python3 scripts/prepare_pet_clips.py <folder with the original GIFs> Notchly/pets
 Needs Pillow.
 """
 import sys, os

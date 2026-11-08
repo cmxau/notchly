@@ -1,13 +1,13 @@
 """Render a looping turntable clip of a 3D model for the accessory-connected indicator.
 
-The clip matches the bundled AirPods clips in boringNotch/accessories: 96x96 pixels, 60 fps, 6 seconds,
+The clip matches the bundled AirPods clips in Notchly/accessories: 96x96 pixels, 60 fps, 6 seconds,
 one full turn around the vertical axis, on a pure black background so it blends into the notch.
 
 Usage, with Blender installed:
-    blender -b -P scripts/render_accessory_clip.py -- model.glb boringNotch/accessories/ps5-controller.mp4
+    blender -b -P scripts/render_accessory_clip.py -- model.glb Notchly/accessories/ps5-controller.mp4
 
 or with the bpy module (pip install bpy):
-    python scripts/render_accessory_clip.py model.glb boringNotch/accessories/ps5-controller.mp4
+    python scripts/render_accessory_clip.py model.glb Notchly/accessories/ps5-controller.mp4
 
 Supported model formats: .glb, .gltf, .fbx, .obj, .usd/.usdz, .blend. ffmpeg must be on the PATH.
 """

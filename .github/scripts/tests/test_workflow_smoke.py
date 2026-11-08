@@ -33,9 +33,9 @@ class WorkflowSmokeTests(unittest.TestCase):
 
     def test_nightly_uses_the_fixed_rolling_tag_and_asset(self) -> None:
         self.assertIn("TAG: nightly", self.nightly)
-        self.assertIn("ASSET_NAME: boringNotch-nightly.dmg", self.nightly)
+        self.assertIn("ASSET_NAME: Notchly-nightly.dmg", self.nightly)
         self.assertNotRegex(self.nightly, r'TAG="nightly-\$')
-        self.assertNotRegex(self.nightly, r"ASSET_NAME=\"boringNotch-\$")
+        self.assertNotRegex(self.nightly, r"ASSET_NAME=\"Notchly-\$")
 
     def test_nightly_uses_the_rolling_release_title(self) -> None:
         self.assertIn("TITLE: Latest Nightly", self.nightly)
@@ -46,7 +46,7 @@ class WorkflowSmokeTests(unittest.TestCase):
         # TAG is pinned to `nightly` below, so this prefix always resolves to
         # .../releases/download/nightly/.
         self.assertIn(
-            "https://github.com/TheBoredTeam/boring.notch/releases/download/${TAG}/",
+            "https://github.com/cmxau/notchly/releases/download/${TAG}/",
             self.nightly,
         )
         self.assertIn("TAG: nightly", self.nightly)
@@ -307,20 +307,20 @@ class WorkflowSmokeTests(unittest.TestCase):
         for removed in ("immutable", ".immutable", "immutable-release"):
             self.assertNotIn(removed, self.nightly)
 
-    def test_built_product_is_named_boring_notch(self) -> None:
-        # The Xcode product and app bundle are "Boring Notch", while the public
-        # DMG keeps the legacy boringNotch.dmg name for download/appcast
-        # compatibility. The project/target/scheme remain boringNotch.
+    def test_built_product_is_named_notchly(self) -> None:
+        # The Xcode product and app bundle are "Notchly", while the public
+        # DMG keeps the legacy Notchly.dmg name for download/appcast
+        # compatibility. The project/target/scheme remain Notchly.
         pbxproj = (
-            REPOSITORY_ROOT / "boringNotch.xcodeproj" / "project.pbxproj"
+            REPOSITORY_ROOT / "Notchly.xcodeproj" / "project.pbxproj"
         ).read_text(encoding="utf-8")
-        self.assertEqual(pbxproj.count('PRODUCT_NAME = "Boring Notch";'), 2)
-        self.assertEqual(pbxproj.count('INFOPLIST_KEY_CFBundleName = "Boring Notch";'), 2)
-        self.assertEqual(pbxproj.count('INFOPLIST_KEY_CFBundleDisplayName = "Boring Notch";'), 2)
+        self.assertEqual(pbxproj.count('PRODUCT_NAME = "Notchly";'), 2)
+        self.assertEqual(pbxproj.count('INFOPLIST_KEY_CFBundleName = "Notchly";'), 2)
+        self.assertEqual(pbxproj.count('INFOPLIST_KEY_CFBundleDisplayName = "Notchly";'), 2)
 
         # Reusable build: archives under the project name, exports the app under
         # APP_NAME, and publishes the compatibility DMG under PROJECT_NAME.
-        self.assertIn("APP_NAME: Boring Notch", self.build_reusable)
+        self.assertIn("APP_NAME: Notchly", self.build_reusable)
         self.assertIn('"Release/$APP_NAME.app"', self.build_reusable)
         self.assertIn('"Release/$PROJECT_NAME.dmg"', self.build_reusable)
         self.assertIn('name: ${{ env.PROJECT_NAME }}.dmg', self.build_reusable)
@@ -329,19 +329,17 @@ class WorkflowSmokeTests(unittest.TestCase):
 
         # Release pipeline: draft download, artifact download, release upload,
         # embedded notes, and the Homebrew cask all use the legacy DMG name.
-        self.assertIn("APP_NAME: Boring Notch", self.release)
+        self.assertIn("APP_NAME: Notchly", self.release)
         self.assertIn('--pattern "$PROJECT_NAME.dmg"', self.release)
         self.assertIn('name: ${{ env.PROJECT_NAME }}.dmg', self.release)
         self.assertIn('"Release/$PROJECT_NAME.dmg"', self.release)
         self.assertIn("printf '%s' \"$RELEASE_NOTES\" > \"Release/${PROJECT_NAME}.html\"", self.release)
         self.assertIn("/${PROJECT_NAME}.dmg", self.release)
-        self.assertIn('app "Boring Notch.app"', self.release)
-        self.assertNotIn("Boring%20Notch.dmg", self.release)
-        self.assertNotIn('app "boringNotch.app"', self.release)
+        self.assertIn('app "Notchly.app"', self.release)
 
         # Nightly: downloads the compatibility artifact, then renames it to the
         # fixed rolling asset name (which is intentionally unchanged).
-        self.assertIn("APP_NAME: Boring Notch", self.nightly)
+        self.assertIn("APP_NAME: Notchly", self.nightly)
         self.assertIn('name: ${{ env.PROJECT_NAME }}.dmg', self.nightly)
         self.assertIn('mv "Release/${PROJECT_NAME}.dmg" "Release/${ASSET_NAME}"', self.nightly)
         self.assertNotIn("${APP_NAME}.dmg", self.nightly)
@@ -355,7 +353,7 @@ class WorkflowSmokeTests(unittest.TestCase):
         self.assertIn("updater/appcast.xml", self.release)
         self.assertIn("publish_stable", self.release)
         self.assertIn("publish_beta", self.release)
-        self.assertNotIn("boringNotch-nightly.dmg", self.release)
+        self.assertNotIn("Notchly-nightly.dmg", self.release)
         self.assertNotIn('TAG: nightly', self.release)
         self.assertNotIn("actions/attest", self.release)
         self.assertNotIn("artifact-metadata", self.release)
@@ -391,6 +389,18 @@ class WorkflowSmokeTests(unittest.TestCase):
         resume_block = self.release.split("Generate release notes", 1)[1].split("- name:", 1)[0]
         self.assertIn('gh release view "v${VERSION}" --repo "$REPO" --json name', resume_block)
         self.assertIn('gh release view "v${VERSION}" --repo "$REPO" --json body', resume_block)
+
+    def test_builds_keep_privacy_grants_across_updates(self) -> None:
+        # An ad-hoc signature changes with every build, so macOS drops the Accessibility grant the HUD needs.
+        # Both build paths run the script that gives the app a requirement every build satisfies, after the app is
+        # built and before it is packaged or verified.
+        script = ".github/scripts/sign_stable.sh"
+        self.assertIn(script, self.build_reusable)
+        self.assertLess(self.build_reusable.index(script), self.build_reusable.index("Create DMG"))
+        alpha = (REPOSITORY_ROOT / ".github" / "workflows" / "alpha_release.yml").read_text()
+        self.assertIn(script, alpha)
+        self.assertLess(alpha.index(script), alpha.index("Verify signature"))
+        self.assertTrue((REPOSITORY_ROOT / script).exists())
 
 
 if __name__ == "__main__":
