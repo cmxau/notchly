@@ -24,7 +24,15 @@ or right-click Notchly in Applications, choose Open, and confirm. The alpha work
 
 ### Homebrew
 
-The root README documents a cask in the `cmxau/homebrew-notchly` tap: `brew install --cask cmxau/notchly/notchly`. Not verified from this repository: the tap's contents.
+Notchly is in the [`cmxau/homebrew-notchly`](https://github.com/cmxau/homebrew-notchly) tap:
+
+```bash
+brew tap cmxau/notchly
+brew trust cmxau/notchly
+brew install --cask notchly
+```
+
+Homebrew 7 and later refuses to load casks from a third-party tap until it is trusted (`brew trust`), and no longer taps one for you when you use the one-line form. On those versions the three steps above are needed. The cask downloads the release DMG and removes the quarantine attribute. I tapped it and Homebrew loaded it up to the trust check; I did not install it.
 
 ## First run
 

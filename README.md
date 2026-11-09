@@ -65,13 +65,17 @@ xattr -dr com.apple.quarantine "/Applications/Notchly.app"
 
 ### Homebrew
 
-The release workflow publishes a cask to the `cmxau/homebrew-notchly` tap on each release:
+Notchly is in the [`cmxau/homebrew-notchly`](https://github.com/cmxau/homebrew-notchly) tap:
 
 ```bash
-brew install --cask cmxau/notchly/notchly
+brew tap cmxau/notchly
+brew trust cmxau/notchly
+brew install --cask notchly
 ```
 
-The cask removes the quarantine attribute after install. A release-candidate cask, `notchly@rc`, is published too.
+Homebrew 7 and later refuses to load casks from a third-party tap until you trust it, which is what `brew trust` does. Older Homebrew versions don't have that command and can use the one-line form, `brew install --cask cmxau/notchly/notchly`, which taps it for you.
+
+The cask removes the quarantine attribute after install, because the app is ad-hoc signed and not notarized. The cask currently points at the `3.0.0-alpha.1` pre-release.
 
 More detail: [docs/installation.md](docs/installation.md).
 
