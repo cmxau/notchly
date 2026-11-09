@@ -32,7 +32,7 @@ brew trust cmxau/notchly
 brew install --cask notchly
 ```
 
-Homebrew 7 and later refuses to load casks from a third-party tap until it is trusted (`brew trust`), and no longer taps one for you when you use the one-line form. On those versions the three steps above are needed. The cask downloads the release DMG and removes the quarantine attribute. I tapped it and Homebrew loaded it up to the trust check; I did not install it.
+Homebrew 7 and later refuses to load casks from a third-party tap until it is trusted (`brew trust`), and no longer taps one for you when you use the one-line form. On those versions the three steps above are needed. The cask downloads the release DMG and removes the quarantine attribute. Tapping it and the trust check were tested; a full install through Homebrew has not been tested.
 
 ## First run
 
